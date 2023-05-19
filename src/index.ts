@@ -2,23 +2,29 @@ type CommonResultType = string;
 type Union = TimespanDto | TimeDto | DateSpanDto | DateDto;
 type DiscriminatorKey = "object";
 
+// DONE
 type DiscriminatedUnion<DiscriminatorKey extends string> = {
   [k in DiscriminatorKey]: string;
 };
-type DiscriminatorValue<Union extends DiscriminatedUnion<DiscriminatorKey>> =
-  Union[DiscriminatorKey];
+
+type DiscriminatorValue<
+  DiscriminatorKey extends string,
+  Union extends DiscriminatedUnion<DiscriminatorKey>,
+> = Union[DiscriminatorKey];
+
 type SelectSingleTypeOfUnion<
   Union extends DiscriminatedUnion<DiscriminatorKey>,
-  K extends DiscriminatorValue<Union>,
+  K extends DiscriminatorValue<DiscriminatorKey, Union>,
 > = Extract<Union, { object: K }>;
+
 type FuncMap<Union extends DiscriminatedUnion<DiscriminatorKey>> = {
-  [K in DiscriminatorValue<Union>]: (
+  [K in DiscriminatorValue<DiscriminatorKey, Union>]: (
     arg: SelectSingleTypeOfUnion<Union, K>,
   ) => CommonResultType;
 };
 
 function MatchFunction(funcMap: FuncMap<Union>) {
-  function result<K extends DiscriminatorValue<Union>>(
+  function result<K extends DiscriminatorValue<DiscriminatorKey, Union>>(
     when: SelectSingleTypeOfUnion<Union, K>,
   ) {
     const obj: K = when.object;
