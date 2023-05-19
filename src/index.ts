@@ -1,5 +1,3 @@
-type When = TimespanDto | TimeDto | DateSpanDto | DateDto;
-
 type DiscriminatedUnion<DiscriminatorKey extends string> = {
   [k in DiscriminatorKey]: string;
 };
@@ -29,7 +27,10 @@ function MatchFunction<
   DiscriminatorKey extends string,
   Union extends DiscriminatedUnion<DiscriminatorKey>,
   CommonResultType,
->(funcMap: FuncMap<DiscriminatorKey, Union, CommonResultType>) {
+>(
+  discriminatorKey: DiscriminatorKey,
+  funcMap: FuncMap<DiscriminatorKey, Union, CommonResultType>,
+) {
   function result<K extends DiscriminatorValue<DiscriminatorKey, Union>>(
     arg: SelectSingleTypeOfUnion<DiscriminatorKey, Union, K>,
   ) {
@@ -39,19 +40,52 @@ function MatchFunction<
   return result;
 }
 
+// EXAMPLE
+type When = TimespanDto | TimeDto | DateSpanDto | DateDto;
+
 const funcMap: FuncMap<"object", When, string> = {
   timespan: translateTimeSpan,
   date: translateDate,
   datespan: translateDateSpan,
   time: translateTime,
 };
-const translate = MatchFunction(funcMap);
-const translateInlineArgs = MatchFunction({
+const translate: (arg: When) => string = MatchFunction("object", funcMap);
+const translateInlineArgs: (arg: When) => string = MatchFunction("object", {
   timespan: translateTimeSpan,
   date: translateDate,
   datespan: translateDateSpan,
   time: translateTime,
 });
+
+// @ts-expect-error
+const bad1TranslateInlineArgs: (arg: string) => string = MatchFunction(
+  "object",
+  {
+    // @ts-expect-error
+    timespan: translateTimeSpan,
+    // @ts-expect-error
+    date: translateDate,
+    // @ts-expect-error,
+    datespan: translateDateSpan,
+    // @ts-expect-error
+    time: translateTime,
+  },
+);
+
+// @ts-expect-error
+const bad2TranslateInlineArgs: (arg: string) => string = MatchFunction(
+  "object",
+  {
+    // @ts-expect-error
+    timespan: translateTimeSpan,
+    // @ts-expect-error
+    date: translateDate,
+    // @ts-expect-error,
+    datespan: translateDateSpan,
+    // @ts-expect-error
+    time: translateTime,
+  },
+);
 
 interface TimespanDto {
   readonly object: "timespan";
