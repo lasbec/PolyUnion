@@ -6,20 +6,13 @@ type SelectSingleTypeOfUnion<K extends DiscriminatorValue> = Extract<
   Union,
   { object: K }
 >;
-function MatchFunction() {
-  type FuncMap = {
-    [K in DiscriminatorValue]: (
-      arg: SelectSingleTypeOfUnion<K>,
-    ) => CommonResultType;
-  };
+type FuncMap = {
+  [K in DiscriminatorValue]: (
+    arg: SelectSingleTypeOfUnion<K>,
+  ) => CommonResultType;
+};
 
-  const translateWhenMap: FuncMap = {
-    timespan: translateTimeSpan,
-    date: translateDate,
-    datespan: translateDateSpan,
-    time: translateTime,
-  };
-
+function MatchFunction(translateWhenMap: FuncMap) {
   function result<K extends DiscriminatorValue>(
     when: SelectSingleTypeOfUnion<K>,
   ) {
@@ -29,7 +22,19 @@ function MatchFunction() {
   return result;
 }
 
-const translate = MatchFunction();
+const translateWhenMap: FuncMap = {
+  timespan: translateTimeSpan,
+  date: translateDate,
+  datespan: translateDateSpan,
+  time: translateTime,
+};
+const translate = MatchFunction(translateWhenMap);
+const translateInlineArgs = MatchFunction({
+  timespan: translateTimeSpan,
+  date: translateDate,
+  datespan: translateDateSpan,
+  time: translateTime,
+});
 
 interface TimespanDto {
   readonly object: "timespan";
