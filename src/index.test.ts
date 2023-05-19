@@ -1,45 +1,24 @@
-import { expect, test } from "vitest";
-
-type SomeCommonResultType = string;
+import { expect, test, describe, it } from "vitest";
+import { FuncMap, MatchFunction } from ".";
 
 type When = TimespanDto | TimeDto | DateSpanDto | DateDto;
-
-type WhenObject = When["object"];
-type TranslateArg<K extends WhenObject> = Extract<When, { object: K }>;
-
-const translateWhenMap: {
-  [K in WhenObject]: (arg: TranslateArg<K>) => SomeCommonResultType;
-} = {
-  timespan: translateTimeSpan,
-  date: translateDate,
-  datespan: translateDateSpan,
-  time: translateTime,
-};
-
-function translate<K extends WhenObject>(when: TranslateArg<K>) {
-  const obj: K = when.object;
-  return translateWhenMap[obj](when);
-}
 
 interface TimespanDto {
   readonly object: "timespan";
   startTime: number;
   endTime: number;
-  startTimezone?: string;
-  endTimezone?: string;
 }
 
-function translateTimeSpan(when: TimespanDto): SomeCommonResultType {
-  return when.endTimezone || "TZ";
+function translateTimeSpan(when: TimespanDto): string {
+  return `${when.startTime}-${when.endTime}`;
 }
 
 interface TimeDto {
   readonly object: "time";
   time: number;
-  timezone: string;
 }
 
-function translateTime(when: TimeDto): SomeCommonResultType {
+function translateTime(when: TimeDto): string {
   return `${when.time}`;
 }
 
@@ -49,8 +28,8 @@ interface DateSpanDto {
   endDate: string;
 }
 
-function translateDateSpan(when: DateSpanDto): SomeCommonResultType {
-  return when.endDate + when.endDate;
+function translateDateSpan(when: DateSpanDto): string {
+  return when.startDate + "-" + when.endDate;
 }
 
 interface DateDto {
@@ -58,32 +37,76 @@ interface DateDto {
   date: string;
 }
 
-function translateDate(when: DateDto): SomeCommonResultType {
+function translateDate(when: DateDto): string {
   return when.date;
 }
 
-translate({ object: "date", date: "abc" }); // okay
+describe("MatchFunction", () => {
+  // Should work inline
+  const translate: (arg: When) => string = MatchFunction("object", {
+    timespan: translateTimeSpan,
+    date: translateDate,
+    datespan: translateDateSpan,
+    time: translateTime,
+  });
 
-// BAD ---------------------------------------------------
-const badTranslateWhenMap: {
-  [K in WhenObject]: (arg: TranslateArg<K>) => SomeCommonResultType;
-} = {
-  // @ts-expect-error
-  timespan: translateDateSpan, // error
-  date: translateDate,
-  // @ts-expect-error
-  datespan: translateTimeSpan, // error
-  time: translateTime,
-};
+  it("should error on wrong common result type", () => {
+    () => {
+      // @ts-expect-error
+      const bad1TranslateInlineArgs: (arg: string) => string = MatchFunction(
+        "object",
+        {
+          // @ts-expect-error
+          timespan: translateTimeSpan,
+          // @ts-expect-error
+          date: translateDate,
+          // @ts-expect-error,
+          datespan: translateDateSpan,
+          // @ts-expect-error
+          time: translateTime,
+        },
+      );
+    };
+  });
 
-function badTranslate<K extends WhenObject>(when: TranslateArg<K>) {
-  const obj: K = when.object;
-  // @ts-expect-error
-  const badWhen: Date = { object: "date", date: "Next Thursday" };
-  // @ts-expect-error
-  return translateWhenMap[obj](badWhen); // error!
-}
+  it("should error on wrong argument type", () => {
+    () => {
+      const bad2TranslateInlineArgs: (arg: When) => number = MatchFunction(
+        "object",
+        {
+          // @ts-expect-error
+          timespan: translateTimeSpan,
+          // @ts-expect-error
+          date: translateDate,
+          // @ts-expect-error,
+          datespan: translateDateSpan,
+          // @ts-expect-error
+          time: translateTime,
+        },
+      );
+    };
+  });
 
-test("A Test test", () => {
-  expect(0).toBe(0);
+  it("should result work", () => {
+    expect(
+      translate({ object: "timespan", startTime: 15, endTime: 16 }),
+    ).toEqual("15-16");
+    expect(translate({ object: "time", time: 7 })).toEqual("7");
+    expect(
+      translate({ object: "datespan", startDate: "7.7.", endDate: "8.7." }),
+    ).toEqual("7.7.-8.7.");
+    expect(translate({ object: "date", date: "29.02.23" })).toEqual("29.02.23");
+  });
+
+  it("should error on invalid arguments", () => {
+    () => {
+      translate({
+        // @ts-expect-error
+        object: "deate",
+        date: "abc",
+      });
+      // @ts-expect-error
+      translate("abe");
+    };
+  });
 });
