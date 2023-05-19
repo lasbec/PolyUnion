@@ -1,6 +1,4 @@
-type CommonResultType = string;
-type Union = TimespanDto | TimeDto | DateSpanDto | DateDto;
-type DiscriminatorKey = "object";
+type When = TimespanDto | TimeDto | DateSpanDto | DateDto;
 
 type DiscriminatedUnion<DiscriminatorKey extends string> = {
   [k in DiscriminatorKey]: string;
@@ -41,7 +39,7 @@ function MatchFunction<
   return result;
 }
 
-const funcMap: FuncMap<DiscriminatorKey, Union, CommonResultType> = {
+const funcMap: FuncMap<"object", When, string> = {
   timespan: translateTimeSpan,
   date: translateDate,
   datespan: translateDateSpan,
@@ -63,7 +61,7 @@ interface TimespanDto {
   endTimezone?: string;
 }
 
-function translateTimeSpan(when: TimespanDto): CommonResultType {
+function translateTimeSpan(when: TimespanDto): string {
   return when.endTimezone || "TZ";
 }
 
@@ -73,7 +71,7 @@ interface TimeDto {
   timezone: string;
 }
 
-function translateTime(when: TimeDto): CommonResultType {
+function translateTime(when: TimeDto): string {
   return `${when.time}`;
 }
 
@@ -83,7 +81,7 @@ interface DateSpanDto {
   endDate: string;
 }
 
-function translateDateSpan(when: DateSpanDto): CommonResultType {
+function translateDateSpan(when: DateSpanDto): string {
   return when.endDate + when.endDate;
 }
 
@@ -92,7 +90,7 @@ interface DateDto {
   date: string;
 }
 
-function translateDate(when: DateDto): CommonResultType {
+function translateDate(when: DateDto): string {
   return when.date;
 }
 
