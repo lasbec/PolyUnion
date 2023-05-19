@@ -33,10 +33,10 @@ function MatchFunction<
   CommonResultType,
 >(funcMap: FuncMap<DiscriminatorKey, Union, CommonResultType>) {
   function result<K extends DiscriminatorValue<DiscriminatorKey, Union>>(
-    when: SelectSingleTypeOfUnion<DiscriminatorKey, Union, K>,
+    arg: SelectSingleTypeOfUnion<DiscriminatorKey, Union, K>,
   ) {
-    const obj: K = when.object;
-    return funcMap[obj](when);
+    const discriminator: K = arg.object;
+    return funcMap[discriminator](arg);
   }
   return result;
 }
