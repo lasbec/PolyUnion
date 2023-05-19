@@ -18,7 +18,7 @@ export type FuncMap<
   ) => CommonResultType;
 };
 
-export function MatchFunction<
+export function DiscriminatingMatchFunction<
   DiscriminatorKey extends string,
   Union extends DiscriminatedType<DiscriminatorKey>,
   CommonResultType,

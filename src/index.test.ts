@@ -1,5 +1,8 @@
 import { expect, test, describe, it } from "vitest";
-import { FuncMap, MatchFunction } from ".";
+import {
+  FuncMap,
+  DiscriminatingMatchFunction as DiscriminatingMatchFunction,
+} from ".";
 
 type When = TimespanDto | TimeDto | DateSpanDto | DateDto;
 
@@ -41,21 +44,23 @@ function translateDate(when: DateDto): string {
   return when.date;
 }
 
-describe("MatchFunction", () => {
+describe("DiscriminatingMatchFunction", () => {
   // Should work inline
-  const translate: (arg: When) => string = MatchFunction("object", {
-    timespan: translateTimeSpan,
-    date: translateDate,
-    datespan: translateDateSpan,
-    time: translateTime,
-  });
+  const translate: (arg: When) => string = DiscriminatingMatchFunction(
+    "object",
+    {
+      timespan: translateTimeSpan,
+      date: translateDate,
+      datespan: translateDateSpan,
+      time: translateTime,
+    },
+  );
 
   it("should error on wrong common result type", () => {
     () => {
       // @ts-expect-error
-      const bad1TranslateInlineArgs: (arg: string) => string = MatchFunction(
-        "object",
-        {
+      const bad1TranslateInlineArgs: (arg: string) => string =
+        DiscriminatingMatchFunction("object", {
           // @ts-expect-error
           timespan: translateTimeSpan,
           // @ts-expect-error
@@ -64,16 +69,14 @@ describe("MatchFunction", () => {
           datespan: translateDateSpan,
           // @ts-expect-error
           time: translateTime,
-        },
-      );
+        });
     };
   });
 
   it("should error on wrong argument type", () => {
     () => {
-      const bad2TranslateInlineArgs: (arg: When) => number = MatchFunction(
-        "object",
-        {
+      const bad2TranslateInlineArgs: (arg: When) => number =
+        DiscriminatingMatchFunction("object", {
           // @ts-expect-error
           timespan: translateTimeSpan,
           // @ts-expect-error
@@ -82,8 +85,7 @@ describe("MatchFunction", () => {
           datespan: translateDateSpan,
           // @ts-expect-error
           time: translateTime,
-        },
-      );
+        });
     };
   });
 
