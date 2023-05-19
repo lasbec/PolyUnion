@@ -11,13 +11,13 @@ type SelectSingleTypeOfUnion<
   Union extends DiscriminatedUnion<DiscriminatorKey>,
   K extends DiscriminatorValue<Union>,
 > = Extract<Union, { object: K }>;
-type FuncMap = {
+type FuncMap<Union extends DiscriminatedUnion<DiscriminatorKey>> = {
   [K in DiscriminatorValue<Union>]: (
     arg: SelectSingleTypeOfUnion<Union, K>,
   ) => CommonResultType;
 };
 
-function MatchFunction(funcMap: FuncMap) {
+function MatchFunction(funcMap: FuncMap<Union>) {
   function result<K extends DiscriminatorValue<Union>>(
     when: SelectSingleTypeOfUnion<Union, K>,
   ) {
@@ -27,7 +27,7 @@ function MatchFunction(funcMap: FuncMap) {
   return result;
 }
 
-const funcMap: FuncMap = {
+const funcMap: FuncMap<Union> = {
   timespan: translateTimeSpan,
   date: translateDate,
   datespan: translateDateSpan,
