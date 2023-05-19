@@ -35,3 +35,36 @@ export function DiscriminatingMatchFunction<
   }
   return result;
 }
+
+type PrimitiveTypeMap = {
+  string: string;
+  number: number;
+  bigint: bigint;
+  boolean: boolean;
+  symbol: symbol;
+  undefined: undefined;
+  null: null;
+  object: object;
+  function: Function;
+};
+type Primitive = PrimitiveTypeMap[keyof PrimitiveTypeMap];
+type PrimitiveTypeString = keyof PrimitiveTypeMap;
+export type FuncMapPrime<Keys extends PrimitiveTypeString, CommonResult> = {
+  [K in Keys]: (arg: PrimitiveTypeMap[K]) => CommonResult;
+};
+
+function getTypeOf<T extends PrimitiveTypeString>(x: PrimitiveTypeMap[T]): T {
+  if (x === null) return "null" as T;
+  return typeof x as T;
+}
+
+export function TypeofMatchFunction<
+  Key extends PrimitiveTypeString,
+  CommonResult,
+>(funcMap: FuncMapPrime<Key, CommonResult>) {
+  function result<D extends Key>(arg: PrimitiveTypeMap[D]) {
+    const discriminator: D = getTypeOf(arg);
+    return funcMap[discriminator](arg);
+  }
+  return result;
+}

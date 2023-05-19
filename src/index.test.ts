@@ -2,6 +2,7 @@ import { expect, test, describe, it } from "vitest";
 import {
   FuncMap,
   DiscriminatingMatchFunction as DiscriminatingMatchFunction,
+  TypeofMatchFunction,
 } from ".";
 
 type When = TimespanDto | TimeDto | DateSpanDto | DateDto;
@@ -110,5 +111,20 @@ describe("DiscriminatingMatchFunction", () => {
       // @ts-expect-error
       translate("abe");
     };
+  });
+});
+
+describe("TypeofMatchFunction", () => {
+  const prettify = TypeofMatchFunction({
+    number: (n) => `N: ${n}`,
+    null: () => "NULL",
+    undefined: () => "",
+    object: () => "Heidewitzka",
+  });
+  it("shoud work", () => {
+    expect(prettify(5)).toEqual("N: 5");
+    expect(prettify(null)).toEqual("NULL");
+    expect(prettify(undefined)).toEqual("");
+    expect(prettify([])).toEqual("Heidewitzka");
   });
 });
