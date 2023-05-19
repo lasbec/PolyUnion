@@ -10,8 +10,8 @@ type DiscriminatorValue<
 type SelectSingleTypeOfUnion<
   DiscriminatorKey extends string,
   Union extends DiscriminatedUnion<DiscriminatorKey>,
-  K extends DiscriminatorValue<DiscriminatorKey, Union>,
-> = Extract<Union, { object: K }>;
+  D extends DiscriminatorValue<DiscriminatorKey, Union>,
+> = Extract<Union, { [K in DiscriminatorKey]: D }>;
 
 type FuncMap<
   DiscriminatorKey extends string,
@@ -31,10 +31,11 @@ function MatchFunction<
   discriminatorKey: DiscriminatorKey,
   funcMap: FuncMap<DiscriminatorKey, Union, CommonResultType>,
 ) {
-  function result<K extends DiscriminatorValue<DiscriminatorKey, Union>>(
-    arg: SelectSingleTypeOfUnion<DiscriminatorKey, Union, K>,
+  type DiscriminatorValue = Union[DiscriminatorKey];
+  function result<D extends DiscriminatorValue>(
+    arg: SelectSingleTypeOfUnion<DiscriminatorKey, Union, D>,
   ) {
-    const discriminator: K = arg.object;
+    const discriminator: D = arg[discriminatorKey];
     return funcMap[discriminator](arg);
   }
   return result;
